@@ -1,16 +1,18 @@
-package frc.robot.oi;
+// Copyright (c) FIRST and other WPILib contributors.
+// Open Source Software; you can modify and/or share it under the terms of
+// the WPILib BSD license file in the root directory of this project.
 
-import java.util.function.DoubleSupplier;
+package frc.robot.oi;
 
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.oi.DriverOI;
 
-public class DriverOI {
+/** Add your docs here. */
+public class OperatorOI {
     private XboxController m_controller;
 
-    public DriverOI(XboxController controller) {
+    public OperatorOI(XboxController controller) {
         m_controller = controller;
     }
 
@@ -24,15 +26,4 @@ public class DriverOI {
         return new JoystickButton(m_controller, XboxController.Button.kY.value);
     }
 
-    public DoubleSupplier getMoveSupplier() {
-        return () -> -m_controller.getLeftY();
-    }
-
-    public Trigger getIsAtHighSpeed() {
-        return new Trigger(() -> Math.abs(m_controller.getLeftY()) > .85);
-    }
-
-    public DoubleSupplier getRotateSupplier() {
-        return () -> m_controller.getRightX();
-    }  
 }
