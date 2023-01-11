@@ -80,6 +80,11 @@ public static final class CANBusIDs {
     public static final double kHighGearRatio = 10.71;
     public static final double kLowGearRatio = 5;
 
+    /**
+	 * This is a property of the Pigeon IMU, and should not be changed.
+	 */
+	public final static int kPigeonUnitsPerRotation = 8192;
+
     public static final double kMaxSpeedMetersPerSecond = 2.0;
     public static final double kMaxAccelMetersPerSecondSquared = 2.0;
 

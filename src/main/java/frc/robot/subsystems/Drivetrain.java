@@ -17,8 +17,10 @@ import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.FollowerType;
 import com.ctre.phoenix.motorcontrol.InvertType;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
+import com.ctre.phoenix.motorcontrol.RemoteSensorSource;
 import com.ctre.phoenix.motorcontrol.SupplyCurrentLimitConfiguration;
 import com.ctre.phoenix.motorcontrol.can.TalonFX;
+import com.ctre.phoenix.motorcontrol.can.TalonFXConfiguration;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 import com.ctre.phoenix.sensors.WPI_PigeonIMU;
 
@@ -31,6 +33,10 @@ public class Drivetrain extends SubsystemBase {
   private final WPI_TalonFX m_rightFollower = new WPI_TalonFX(Constants.CANBusIDs.kDrivetrainRightFrontTalonFX);
 
   private Supplier<Transmission.GearState> m_gearStateSupplier;
+
+  /** Config Objects for motor controllers */
+	TalonFXConfiguration m_leftConfig = new TalonFXConfiguration();
+	TalonFXConfiguration m_rightConfig = new TalonFXConfiguration();
 
   private DifferentialDrive m_diffDrive;
   
@@ -124,6 +130,28 @@ public class Drivetrain extends SubsystemBase {
       m_rightFollower.follow(m_rightLeader, FollowerType.PercentOutput);
 
       m_rightLeader.setInverted(InvertType.InvertMotorOutput);
+  }
+
+  public void setIntegratedSensors() {
+    // Configure the motors
+    for (TalonFX fx : new TalonFX[] { m_leftLeader, m_leftFollower, m_rightLeader, m_rightFollower }) {    
+      // Use 1-to-1 coefficient for the encoders.
+      fx.configSelectedFeedbackCoefficient(1);
+      fx.configSelectedFeedbackSensor(FeedbackDevice.IntegratedSensor); 
+    }
+  }
+
+  public void setPigeonSensors() {
+    // Configure the motors
+    for (TalonFX fx : new TalonFX[] { m_leftLeader, m_rightLeader}) {    
+      // Configure the RemoteSensor0 and set it to the Pigeon pitch source
+      fx.configRemoteFeedbackFilter(m_pigeon.getDeviceID(), 
+                                    RemoteSensorSource.Pigeon_Pitch, 
+                                    0);
+      // Convert Yaw to tenths of a degree
+      fx.configSelectedFeedbackCoefficient(3600.0 / DrivetrainConstants.kPigeonUnitsPerRotation);                              
+      fx.configSelectedFeedbackSensor(FeedbackDevice.RemoteSensor0); 
+    }
   }
 
   // -----------------------------------------------------------
