@@ -180,7 +180,17 @@ public class Drivetrain extends SubsystemBase {
     return angle;
   }
 
+  // -----------------------------------------------------------
+  // Process Logic
+  // -----------------------------------------------------------
+
   // This method will be called once per scheduler run
   @Override
-  public void periodic() {}
+  public void periodic() {
+    publishTelemetry();
+  }
+
+  public void publishTelemetry() {
+
+  }  
 }
