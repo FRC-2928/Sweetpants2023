@@ -9,6 +9,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import java.util.function.Supplier;
 
 import com.ctre.phoenix6.configs.MotorOutputConfigs;
+import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.controls.Follower;
@@ -57,7 +58,7 @@ public class Drivetrain extends SubsystemBase {
     this.configmotors();
 
     // Configure PID values for the talons
-    // this.setWheelPIDF();
+    this.setWheelPIDF();
 
     this.diffDrive = new DifferentialDrive(leftLeader, rightLeader);
 
@@ -66,16 +67,20 @@ public class Drivetrain extends SubsystemBase {
     this.zeroGyro();
   }
 
-  // public void setWheelPIDF() {
-  //   // set the PID values for each individual wheel
-  //   for (TalonFX fx : new TalonFX[] { this.leftLeader, this.rightLeader }) {
-  //     fx.config_kP(0, DrivetrainConstants.GainsProfiled.P, 0);
-  //     fx.config_kI(0, DrivetrainConstants.GainsProfiled.I, 0);
-  //     fx.config_kD(0, DrivetrainConstants.GainsProfiled.D, 0);
-  //     fx.config_kF(0, DrivetrainConstants.GainsProfiled.F, 0);
-  //     // m_talonsMaster.config_IntegralZone(0, 30);
-  //   }
-  // }
+  public void setWheelPIDF() {
+    // set the PID values for each individual wheel
+    for (TalonFX fx : new TalonFX[] { this.leftLeader, this.rightLeader }) {
+      // in init function, set slot 0 gains
+      var slot0Configs = new Slot0Configs();
+      slot0Configs.kS = 0.05; // Add 0.05 V output to overcome static friction
+      slot0Configs.kV = 0.12; // A velocity target of 1 rps results in 0.12 V output
+      slot0Configs.kP = 0.11; // An error of 1 rps results in 0.11 V output
+      slot0Configs.kI = 0.5; // An error of 1 rps increases output by 0.5 V each second
+      slot0Configs.kD = 0.01; // An acceleration of 1 rps/s results in 0.01 V output
+
+      fx.getConfigurator().apply(slot0Configs);
+    }
+  }
 
   public void configmotors() { // new
     // Configure the motors
@@ -94,21 +99,24 @@ public class Drivetrain extends SubsystemBase {
     leftConfiguration.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RotorSensor;
     rightConfiguration.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RotorSensor;
 
-    /* User can optionally change the configs or leave it alone to perform a factory default */
-    leftConfiguration.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
-    rightConfiguration.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
     leftConfiguration.MotorOutput.NeutralMode = NeutralModeValue.Brake;
     rightConfiguration.MotorOutput.NeutralMode = NeutralModeValue.Brake;
 
+    // Have the wheels on each side of the drivetrain run in opposite directions
+    leftConfiguration.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
+    rightConfiguration.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+
+    // Apply the configuration to the wheels
     this.leftLeader.getConfigurator().apply(leftConfiguration);
     this.leftFollower.getConfigurator().apply(leftConfiguration);
     this.rightLeader.getConfigurator().apply(rightConfiguration);
     this.rightFollower.getConfigurator().apply(rightConfiguration);
 
-    /* Set up followers to follow leaders */
+    // Set up followers to follow leaders
     this.leftFollower.setControl(new Follower(leftLeader.getDeviceID(), false));
     this.rightFollower.setControl(new Follower(rightLeader.getDeviceID(), false));
   
+    // Enable safety
     this.leftLeader.setSafetyEnabled(true);
     this.rightLeader.setSafetyEnabled(true);
     
@@ -132,12 +140,12 @@ public class Drivetrain extends SubsystemBase {
   }
 
   public void tankDriveVolts(double leftVolts, double rightVolts) {
-    var leftSteerRequest = new DutyCycleOut(leftVolts);
-    // leftSteerRequest.Output = leftVolts;
-    this.leftLeader.setControl(leftSteerRequest);
+    var leftVoltsRequest = new DutyCycleOut(leftVolts / 12);
+    // leftVoltsRequest.Output = leftVolts / 12;
+    this.leftLeader.setControl(leftVoltsRequest);
 
-    var rightSteerRequest = new DutyCycleOut(rightVolts);
-    this.rightLeader.setControl(rightSteerRequest);
+    var rightVoltsRequest = new DutyCycleOut(rightVolts / 12);
+    this.rightLeader.setControl(rightVoltsRequest);
 
     // this.leftLeader.set(ControlMode.PercentOutput, leftVolts / 12);
     // this.rightLeader.set(ControlMode.PercentOutput, rightVolts / 12);
