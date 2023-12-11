@@ -1,7 +1,10 @@
 package frc.robot.commands;
 
-import com.ctre.phoenix.motorcontrol.ControlMode;
-import com.ctre.phoenix.motorcontrol.can.TalonFX;
+import com.ctre.phoenix6.controls.DutyCycleOut;
+import com.ctre.phoenix6.hardware.TalonFX;
+
+// import com.ctre.phoenix.motorcontrol.ControlMode;
+// import com.ctre.phoenix.motorcontrol.can.TalonFX;
 
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.subsystems.Drivetrain;
@@ -20,10 +23,8 @@ public class Balance extends CommandBase {
         drivetrain.halt();
 
         for(TalonFX fx : new TalonFX[] { drivetrain.leftLeader, drivetrain.rightLeader }) {
-            fx.selectProfileSlot(0, 0);
-            fx.set(ControlMode.Position, 0);
-
-            // Todo: feed in measured value
+            var motorRequest = new DutyCycleOut(0);
+            fx.setControl(motorRequest);
         }
     }
 
