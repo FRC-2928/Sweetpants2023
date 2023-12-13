@@ -8,6 +8,8 @@ import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import java.util.function.Supplier;
 
+import org.littletonrobotics.junction.Logger;
+
 import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
@@ -21,37 +23,32 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import frc.robot.Constants;
 import frc.robot.Constants.DrivetrainConstants;
+import frc.robot.subsystems.DrivetrainIO.DrivetrainIOInputs;
 import frc.robot.subsystems.Transmission.GearState;
 
-// import com.ctre.phoenix.motorcontrol.ControlMode;
-// import com.ctre.phoenix.motorcontrol.FeedbackDevice;
-// import com.ctre.phoenix.motorcontrol.FollowerType;
-// import com.ctre.phoenix.motorcontrol.InvertType;
-// import com.ctre.phoenix.motorcontrol.NeutralMode;
-// import com.ctre.phoenix.motorcontrol.SupplyCurrentLimitConfiguration;
-// import com.ctre.phoenix.motorcontrol.can.TalonFX;
-// import com.ctre.phoenix.motorcontrol.can.TalonFX;
-// import com.ctre.phoenix.sensors.PigeonIMU;
-
 public class Drivetrain extends SubsystemBase {
-  public final TalonFX leftLeader = new TalonFX(Constants.CANBusIDs.DrivetrainLeftBackTalonFX);
-  public final TalonFX rightLeader = new TalonFX(Constants.CANBusIDs.DrivetrainRightBackTalonFX);
-  public final TalonFX leftFollower = new TalonFX(Constants.CANBusIDs.DrivetrainLeftFrontTalonFX);
-  public final TalonFX rightFollower = new TalonFX(Constants.CANBusIDs.DrivetrainRightFrontTalonFX);
-
+  
   private Supplier<Transmission.GearState> gearStateSupplier;
 
-  public DifferentialDrive diffDrive;
+  // public DifferentialDrive diffDrive;
 
   // Set up the BuiltInAccelerometer
   public Pigeon2 pigeon = new Pigeon2(Constants.CANBusIDs.kPigeonIMU);
+
+  /**
+   * Brings in the swerve module IO class. This gives us direct control to the hardware/simulated swerve module
+   */
+  private final DrivetrainIO io;
+  private final DrivetrainIOInputs inputs = new DrivetrainIOInputs();
 
   // -----------------------------------------------------------
   // Initialization
   // -----------------------------------------------------------
 
   /** Creates a new Drivetrain. */
-  public Drivetrain(Supplier<Transmission.GearState> gearStateSupplier) {
+  public Drivetrain(DrivetrainIO io, Supplier<Transmission.GearState> gearStateSupplier) {
+    this.io = io;
+
     this.gearStateSupplier = gearStateSupplier;
 
     // Motors
@@ -60,7 +57,7 @@ public class Drivetrain extends SubsystemBase {
     // Configure PID values for the talons
     this.setWheelPIDF();
 
-    this.diffDrive = new DifferentialDrive(leftLeader, rightLeader);
+    // this.diffDrive = new DifferentialDrive(leftLeader, rightLeader);
 
     // Reset encoders and gyro
     this.resetEncoders();
@@ -68,88 +65,72 @@ public class Drivetrain extends SubsystemBase {
   }
 
   public void setWheelPIDF() {
-    // set the PID values for each individual wheel
-    for (TalonFX fx : new TalonFX[] { this.leftLeader, this.rightLeader }) {
-      // in init function, set slot 0 gains
-      var slot0Configs = new Slot0Configs();
-      slot0Configs.kS = 0.05; // Add 0.05 V output to overcome static friction
-      slot0Configs.kV = 0.12; // A velocity target of 1 rps results in 0.12 V output
-      slot0Configs.kP = 0.11; // An error of 1 rps results in 0.11 V output
-      slot0Configs.kI = 0.5; // An error of 1 rps increases output by 0.5 V each second
-      slot0Configs.kD = 0.01; // An acceleration of 1 rps/s results in 0.01 V output
+    // // set the PID values for each individual wheel
+    // for (TalonFX fx : new TalonFX[] { this.leftLeader, this.rightLeader }) {
+    //   // in init function, set slot 0 gains
+    //   var slot0Configs = new Slot0Configs();
+    //   slot0Configs.kS = 0.05; // Add 0.05 V output to overcome static friction
+    //   slot0Configs.kV = 0.12; // A velocity target of 1 rps results in 0.12 V output
+    //   slot0Configs.kP = 0.11; // An error of 1 rps results in 0.11 V output
+    //   slot0Configs.kI = 0.5; // An error of 1 rps increases output by 0.5 V each second
+    //   slot0Configs.kD = 0.01; // An acceleration of 1 rps/s results in 0.01 V output
 
-      fx.getConfigurator().apply(slot0Configs);
-    }
+    //   fx.getConfigurator().apply(slot0Configs);
+    // }
   }
 
   public void configmotors() { // new
-    // Configure the motors
-    for (TalonFX fx : new TalonFX[] { this.leftLeader, this.leftFollower, this.rightLeader, this.rightFollower }) {    
-      // Apply default configuration
-      fx.getConfigurator().apply(new TalonFXConfiguration());     
-    }
+    // // Configure the motors
+    // for (TalonFX fx : new TalonFX[] { this.leftLeader, this.leftFollower, this.rightLeader, this.rightFollower }) {    
+    //   // Apply default configuration
+    //   fx.getConfigurator().apply(new TalonFXConfiguration());     
+    // }
 
-    /* Configure the devices */
-    var leftConfiguration = new TalonFXConfiguration();
-    var rightConfiguration = new TalonFXConfiguration();
+    // /* Configure the devices */
+    // var leftConfiguration = new TalonFXConfiguration();
+    // var rightConfiguration = new TalonFXConfiguration();
 
-    leftConfiguration.OpenLoopRamps.DutyCycleOpenLoopRampPeriod = 0.1;  
-    rightConfiguration.OpenLoopRamps.DutyCycleOpenLoopRampPeriod = 0.1; 
+    // leftConfiguration.OpenLoopRamps.DutyCycleOpenLoopRampPeriod = 0.1;  
+    // rightConfiguration.OpenLoopRamps.DutyCycleOpenLoopRampPeriod = 0.1; 
 
-    leftConfiguration.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RotorSensor;
-    rightConfiguration.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RotorSensor;
+    // leftConfiguration.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RotorSensor;
+    // rightConfiguration.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RotorSensor;
 
-    leftConfiguration.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-    rightConfiguration.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+    // leftConfiguration.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+    // rightConfiguration.MotorOutput.NeutralMode = NeutralModeValue.Brake;
 
-    // Have the wheels on each side of the drivetrain run in opposite directions
-    leftConfiguration.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
-    rightConfiguration.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+    // // Have the wheels on each side of the drivetrain run in opposite directions
+    // leftConfiguration.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
+    // rightConfiguration.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
 
-    // Apply the configuration to the wheels
-    this.leftLeader.getConfigurator().apply(leftConfiguration);
-    this.leftFollower.getConfigurator().apply(leftConfiguration);
-    this.rightLeader.getConfigurator().apply(rightConfiguration);
-    this.rightFollower.getConfigurator().apply(rightConfiguration);
+    // // Apply the configuration to the wheels
+    // this.leftLeader.getConfigurator().apply(leftConfiguration);
+    // this.leftFollower.getConfigurator().apply(leftConfiguration);
+    // this.rightLeader.getConfigurator().apply(rightConfiguration);
+    // this.rightFollower.getConfigurator().apply(rightConfiguration);
 
-    // Set up followers to follow leaders
-    this.leftFollower.setControl(new Follower(leftLeader.getDeviceID(), false));
-    this.rightFollower.setControl(new Follower(rightLeader.getDeviceID(), false));
+    // // Set up followers to follow leaders
+    // this.leftFollower.setControl(new Follower(leftLeader.getDeviceID(), false));
+    // this.rightFollower.setControl(new Follower(rightLeader.getDeviceID(), false));
   
-    // Enable safety
-    this.leftLeader.setSafetyEnabled(true);
-    this.rightLeader.setSafetyEnabled(true);
-    
-
-    // Setting followers, followers don't automatically follow the Leader's inverts
-    // so you must set the invert type to Follow the Leader
-    // this.leftFollower.setInverted(InvertType.FollowMaster);
-    // this.rightFollower.setInverted(InvertType.FollowMaster);
-
-    // this.leftFollower.follow(this.leftLeader, FollowerType.PercentOutput);
-    // this.rightFollower.follow(this.rightLeader, FollowerType.PercentOutput);
-
-    // this.rightLeader.setInverted(InvertType.InvertMotorOutput);
+    // // Enable safety
+    // this.leftLeader.setSafetyEnabled(true);
+    // this.rightLeader.setSafetyEnabled(true);
   }
 
   // -----------------------------------------------------------
   // Control Input
   // -----------------------------------------------------------
   public void halt() {
-    this.diffDrive.arcadeDrive(0, 0);
+    io.setVoltage(0, 0);
+  }
+
+  public void drive(double xSpeed, double zRotation) {
+
   }
 
   public void tankDriveVolts(double leftVolts, double rightVolts) {
-    var leftVoltsRequest = new DutyCycleOut(leftVolts / 12);
-    // leftVoltsRequest.Output = leftVolts / 12;
-    this.leftLeader.setControl(leftVoltsRequest);
-
-    var rightVoltsRequest = new DutyCycleOut(rightVolts / 12);
-    this.rightLeader.setControl(rightVoltsRequest);
-
-    // this.leftLeader.set(ControlMode.PercentOutput, leftVolts / 12);
-    // this.rightLeader.set(ControlMode.PercentOutput, rightVolts / 12);
-    this.diffDrive.feed();
+    io.setVoltage(leftVolts, rightVolts);
   }
 
   public void zeroGyro() {
@@ -157,10 +138,7 @@ public class Drivetrain extends SubsystemBase {
   }
 
   public void resetEncoders() {
-    this.leftLeader.setRotorPosition(0);
-    this.rightLeader.setRotorPosition(0);
-    // this.leftLeader.setSelectedSensorPosition(0);
-    // this.rightLeader.setSelectedSensorPosition(0);
+    io.resetEncoders();
   }
 
   // -----------------------------------------------------------
@@ -185,11 +163,13 @@ public class Drivetrain extends SubsystemBase {
   }
 
   public double getLeftDistanceMeters() {
-    return this.encoderTicksToMeters(this.leftLeader.getPosition().getValue());
+    // return this.encoderTicksToMeters(this.leftLeader.getPosition().getValue());
+    return this.encoderTicksToMeters(inputs.leftPositionTicks);
   }
 
   public double getRightDistanceMeters() {
-    return this.encoderTicksToMeters(this.rightLeader.getPosition().getValue());
+    // return this.encoderTicksToMeters(this.rightLeader.getPosition().getValue());
+    return this.encoderTicksToMeters(inputs.rightPositionTicks);
   }
 
   public double getAvgDistanceMeters() {
@@ -211,6 +191,10 @@ public class Drivetrain extends SubsystemBase {
   // This method will be called once per scheduler run
   @Override
   public void periodic() {
+    // This method will be called once per scheduler run
+    io.updateInputs(inputs);
+    Logger.getInstance().processInputs("Drive", inputs);
+
     publishTelemetry();
   }
 

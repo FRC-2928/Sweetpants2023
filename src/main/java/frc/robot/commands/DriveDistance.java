@@ -31,20 +31,20 @@ public class DriveDistance extends CommandBase {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    m_drivetrain.diffDrive.arcadeDrive(0, 0);
+    m_drivetrain.halt();;
     m_drivetrain.resetEncoders();
   }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    m_drivetrain.diffDrive.arcadeDrive(m_speed, 0);
+    m_drivetrain.drive(m_speed, 0);
   }
 
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    m_drivetrain.diffDrive.arcadeDrive(0, 0);
+    m_drivetrain.halt();;
   }
 
   // Returns true when the command should end.

@@ -9,6 +9,8 @@ import frc.robot.commands.AutonomousDistance;
 import frc.robot.commands.AutonomousTime;
 import frc.robot.oi.DriverOI;
 import frc.robot.subsystems.Drivetrain;
+import frc.robot.subsystems.DrivetrainIO;
+import frc.robot.subsystems.DrivetrainIOFalcon500;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -26,7 +28,7 @@ public class RobotContainer {
   
   // The Robot's Subsystems
   public final Transmission m_transmission = new Transmission();
-  public final Drivetrain m_drivetrain = new Drivetrain(m_transmission::getGearState);
+  public final Drivetrain m_drivetrain;
 
   // XBox Controllers
   private final XboxController m_driverController = new XboxController(0);
@@ -39,6 +41,8 @@ public class RobotContainer {
    * The container for the robot. Contains subsystems, OI devices, and commands. 
    */
   public RobotContainer() {
+
+    m_drivetrain = new Drivetrain(new DrivetrainIOFalcon500(), m_transmission::getGearState);
 
     // Configure the button bindings
     configureAutoChooser();
@@ -64,7 +68,7 @@ public class RobotContainer {
     m_drivetrain.setDefaultCommand(
         // A split-stick arcade command, with forward/backward controlled by the left
         // hand, and turning controlled by the right.
-        new RunCommand(() -> m_drivetrain.diffDrive.arcadeDrive(m_driverOI.getMoveSupplier().getAsDouble(), m_driverOI.getRotateSupplier().getAsDouble()),
+        new RunCommand(() -> m_drivetrain.drive(m_driverOI.getMoveSupplier().getAsDouble(), m_driverOI.getRotateSupplier().getAsDouble()),
               m_drivetrain));
 
     // Configure button commands

@@ -38,7 +38,7 @@ public class ArcadeDrive extends CommandBase {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    this.drivetrain.diffDrive.arcadeDrive(this.xaxisSpeedSupplier.get(), this.zaxisRotateSupplier.get());
+    this.drivetrain.drive(this.xaxisSpeedSupplier.get(), this.zaxisRotateSupplier.get());
   }
 
   // Called once the command ends or is interrupted.

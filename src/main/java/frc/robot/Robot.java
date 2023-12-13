@@ -4,11 +4,15 @@
 
 package frc.robot;
 
-import edu.wpi.first.math.geometry.Rotation3d;
+import org.littletonrobotics.junction.LogFileUtil;
+import org.littletonrobotics.junction.LoggedRobot;
+import org.littletonrobotics.junction.Logger;
+import org.littletonrobotics.junction.networktables.NT4Publisher;
+import org.littletonrobotics.junction.wpilog.WPILOGReader;
+import org.littletonrobotics.junction.wpilog.WPILOGWriter;
+
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
-import edu.wpi.first.wpilibj.TimedRobot;
-import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
@@ -19,7 +23,7 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
  * the package after creating this project, you must also update the build.gradle file in the
  * project.
  */
-public class Robot extends TimedRobot {
+public class Robot extends LoggedRobot {
   private Command autonomousCommand;
   private Compressor compressor;
   private RobotContainer robotContainer;
@@ -30,6 +34,21 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotInit() {
+    Logger.getInstance().recordMetadata("ProjectName", "MyProject"); // Set a metadata value
+
+    if (isReal()) {
+        Logger.getInstance().addDataReceiver(new WPILOGWriter("/U")); // Log to a USB stick
+        Logger.getInstance().addDataReceiver(new NT4Publisher()); // Publish data to NetworkTables
+    } else {
+        setUseTiming(false); // Run as fast as possible
+        String logPath = LogFileUtil.findReplayLog(); // Pull the replay log from AdvantageScope (or prompt the user)
+        Logger.getInstance().setReplaySource(new WPILOGReader(logPath)); // Read replay log
+        Logger.getInstance().addDataReceiver(new WPILOGWriter(LogFileUtil.addPathSuffix(logPath, "_sim"))); // Save outputs to a new log
+    }
+
+    // Logger.disableDeterministicTimestamps() // See "Deterministic Timestamps" in the "Understanding Data Flow" page
+    Logger.getInstance().start(); // Start logging! No more data receivers, replay sources, or metadata values may be added.
+    
     // Instantiate our RobotContainer.  This will perform all our button bindings, and put our
     // autonomous chooser on the dashboard.
     this.compressor = new Compressor(1, PneumaticsModuleType.REVPH);
