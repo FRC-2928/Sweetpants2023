@@ -9,8 +9,8 @@ import frc.robot.commands.AutonomousDistance;
 import frc.robot.commands.AutonomousTime;
 import frc.robot.oi.DriverOI;
 import frc.robot.subsystems.Drivetrain;
-import frc.robot.subsystems.DrivetrainIO;
 import frc.robot.subsystems.DrivetrainIOFalcon500;
+import frc.robot.subsystems.GyroIOPideon2;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -42,7 +42,9 @@ public class RobotContainer {
    */
   public RobotContainer() {
 
-    m_drivetrain = new Drivetrain(new DrivetrainIOFalcon500(), m_transmission::getGearState);
+    m_drivetrain = new Drivetrain(new GyroIOPideon2(),
+                                  new DrivetrainIOFalcon500(), 
+                                  m_transmission::getGearState);
 
     // Configure the button bindings
     configureAutoChooser();

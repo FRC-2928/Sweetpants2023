@@ -8,18 +8,20 @@ public interface DrivetrainIO {
   public static class DrivetrainIOInputs implements LoggableInputs {
     public double leftPositionTicks = 0.0; 
     public double rightPositionTicks = 0.0;  
-    public double gyroYawPositionRad = 0.0;
+    // public double[] gyroYawPitchRoll;
+    // public double gyroYawPosition;
 
     public void toLog(LogTable table) {
       table.put("leftPositionTicks", leftPositionTicks);   
       table.put("rightPositionTicks", rightPositionTicks);
-      table.put("GyroYawPositionRad", gyroYawPositionRad);
+      // table.put("GyroYawPosition", gyroYawPosition);
     }
 
     public void fromLog(LogTable table) {
       leftPositionTicks = table.getDouble("leftPositionTicks", leftPositionTicks);    
       rightPositionTicks = table.getDouble("rightPositionTicks", rightPositionTicks);
-      gyroYawPositionRad = table.getDouble("GyroYawPositionRad", gyroYawPositionRad);
+      // gyroYawPitchRoll = table.getDoubleArray(null, gyroYawPitchRoll);
+      // gyroYawPosition = table.getDouble("GyroYawPosition", gyroYawPosition);
     }
   }  
 
@@ -32,5 +34,7 @@ public interface DrivetrainIO {
   public default void setVoltage(double leftVolts, double rightVolts) {}
 
   public default void resetEncoders() {}
+
+  // public default void resetGyro() {}
 
 }

@@ -9,6 +9,8 @@ import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
+import com.ctre.phoenix6.hardware.Pigeon2;
+
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import frc.robot.Constants;
 
@@ -18,9 +20,6 @@ public class DrivetrainIOFalcon500 implements DrivetrainIO {
   public final TalonFX leftFollower = new TalonFX(Constants.CANBusIDs.DrivetrainLeftFrontTalonFX);
   public final TalonFX rightFollower = new TalonFX(Constants.CANBusIDs.DrivetrainRightFrontTalonFX);
   private DifferentialDrive diffDrive;
-
-
-  // private final AHRS gyro = new AHRS(SerialPort.Port.kMXP);
 
   public DrivetrainIOFalcon500() {
     configmotors();
