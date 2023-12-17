@@ -10,6 +10,7 @@ import frc.robot.commands.AutonomousTime;
 import frc.robot.oi.DriverOI;
 import frc.robot.subsystems.Drivetrain;
 import frc.robot.subsystems.DrivetrainIOFalcon500;
+import frc.robot.subsystems.DrivetrainIOSim;
 import frc.robot.subsystems.GyroIOPideon2;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -42,9 +43,17 @@ public class RobotContainer {
    */
   public RobotContainer() {
 
-    m_drivetrain = new Drivetrain(new GyroIOPideon2(),
-                                  new DrivetrainIOFalcon500(), 
-                                  m_transmission::getGearState);
+    if (Robot.isReal()) {
+      // Instantiate IO implementations to talk to real hardware
+      m_drivetrain = new Drivetrain(new GyroIOPideon2(),
+                                    new DrivetrainIOFalcon500(), 
+                                    m_transmission::getGearState);
+  } else {
+      // Use anonymous classes to create "dummy" IO implementations
+      m_drivetrain = new Drivetrain(new GyroIOPideon2(),
+                                    new DrivetrainIOSim(), 
+                                    m_transmission::getGearState);
+  }
 
     // Configure the button bindings
     configureAutoChooser();

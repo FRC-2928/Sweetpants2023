@@ -6,8 +6,10 @@ package frc.robot;
 
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
+import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.trajectory.constraint.DifferentialDriveVoltageConstraint;
+import edu.wpi.first.wpilibj.simulation.DifferentialDrivetrainSim;
 
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide
@@ -113,6 +115,28 @@ public final class Constants {
 
         // public static final double kDistanceToleranceMeters = 0.1;
         // public static final double kVelocityToleranceMeters = 0.1;
+    }
+
+    public static final class SimulationConstants {
+        /* Simulation model of the drivetrain */
+        public static final DifferentialDrivetrainSim driveSim = new DifferentialDrivetrainSim(
+                DCMotor.getFalcon500(2), // 2 CIMS on each side of the drivetrain.
+                DrivetrainConstants.LowGearRatio, 
+                2.1, // MOI of 2.1 kg m^2 (from CAD model).
+                26.5, // Mass of the robot is 26.5 kg.
+                DrivetrainConstants.WheelDiameterMeters/2, // Robot uses 3" radius (6" diameter) wheels.
+                DrivetrainConstants.kTrackWidthMeters, // Distance between wheels is _ meters.
+        
+                /*
+                * The standard deviations for measurement noise:
+                * x and y: 0.001 m
+                * heading: 0.001 rad
+                * l and r velocity: 0.1 m/s
+                * l and r position: 0.005 m
+                */
+                /* Uncomment the following line to add measurement noise. */
+                null // VecBuilder.fill(0.001, 0.001, 0.001, 0.1, 0.1, 0.005, 0.005)
+        );
     }
 
 }

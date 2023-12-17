@@ -3,6 +3,8 @@ package frc.robot.subsystems;
 import org.littletonrobotics.junction.LogTable;
 import org.littletonrobotics.junction.inputs.LoggableInputs;
 
+import com.ctre.phoenix6.BaseStatusSignal;
+
 public interface GyroIO {
 
   public static class GyroIOInputs implements LoggableInputs {

@@ -9,7 +9,6 @@ import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
 // import com.ctre.phoenix6.hardware.Pigeon2;
 
-import frc.robot.Constants;
 import frc.robot.Constants.DrivetrainConstants;
 import frc.robot.subsystems.DrivetrainIO.DrivetrainIOInputs;
 import frc.robot.subsystems.GyroIO.GyroIOInputs;
@@ -115,7 +114,9 @@ public class Drivetrain extends SubsystemBase {
   // This method will be called once per scheduler run
   @Override
   public void periodic() {
-    // This method will be called once per scheduler run
+    gyroIO.updateInputs(gyroInputs);
+    Logger.getInstance().processInputs("Drive", gyroInputs);
+
     io.updateInputs(inputs);
     Logger.getInstance().processInputs("Drive", inputs);
 
@@ -123,6 +124,6 @@ public class Drivetrain extends SubsystemBase {
   }
 
   public void publishTelemetry() {
-
   }  
+
 }
