@@ -48,12 +48,12 @@ public class RobotContainer {
       m_drivetrain = new Drivetrain(new GyroIOPideon2(),
                                     new DrivetrainIOFalcon500(), 
                                     m_transmission::getGearState);
-  } else {
-      // Use anonymous classes to create "dummy" IO implementations
-      m_drivetrain = new Drivetrain(new GyroIOPideon2(),
-                                    new DrivetrainIOSim(), 
-                                    m_transmission::getGearState);
-  }
+    } else {
+        // Use anonymous classes to create "dummy" IO implementations
+        m_drivetrain = new Drivetrain(new GyroIOPideon2(),
+                                      new DrivetrainIOSim(), 
+                                      m_transmission::getGearState);
+    }
 
     // Configure the button bindings
     configureAutoChooser();

@@ -4,6 +4,7 @@
 
 package frc.robot.subsystems;
 
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
@@ -107,6 +108,10 @@ public class Drivetrain extends SubsystemBase {
     return gyroInputs.gyroYawPitchRoll;
   }
 
+  public double getHeading() {
+    return gyroInputs.gyroYawPosition;
+  }
+
   // -----------------------------------------------------------
   // Process Logic
   // -----------------------------------------------------------
@@ -124,6 +129,9 @@ public class Drivetrain extends SubsystemBase {
   }
 
   public void publishTelemetry() {
+    SmartDashboard.putNumber("Left encoder", getLeftDistanceMeters());
+    SmartDashboard.putNumber("Right encoder", getRightDistanceMeters());
+    SmartDashboard.putNumber("Heading", getHeading());
   }  
 
 }
